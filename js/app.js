@@ -286,10 +286,6 @@ function handleClick(event) {
     /* Add 1 to our round tracker */
     currentRound++;
 
-    /* Log the vote to console so we can watch it working */
-    console.log(`Voted for: ${clickedProduct.name} | Round: ${currentRound} of ${TOTAL_ROUNDS}`);
-    console.log(`${clickedProduct.name} now has ${clickedProduct.clicks} click(s) and ${clickedProduct.views} view(s)`);
-
     /* --------------------------------------------------------
        CHECK IF VOTING IS OVER
        
