@@ -343,3 +343,82 @@ function endGame() {
    This line goes AFTER both functions are defined above.
    ============================================================ */
 productDisplay.addEventListener('click', handleClick);
+
+/* ============================================================
+   PART 11 — SHOW RESULTS FUNCTION
+
+   This function builds and displays the final voting results.
+   It fires when the user clicks the "View Results" button.
+
+   For each product we'll display:
+   - Product name
+   - How many votes (clicks) it received
+   - How many times it was shown (views)
+   - The percentage of times it was clicked when shown
+     (clicks ÷ views × 100, rounded to 1 decimal place)
+   ============================================================ */
+function showResults() {
+
+    /* Hide the View Results button — we don't need it anymore */
+    viewResultsBtn.classList.add('hidden');
+
+    /* Show the results section by removing its hidden class */
+    resultsDisplay.classList.remove('hidden');
+
+    /* Clear any existing results in the list just in case */
+    resultsList.innerHTML = '';
+
+    /* --------------------------------------------------------
+       SORT products by clicks (most voted first)
+       
+       .sort() compares two items at a time (a and b)
+       Returning b.clicks - a.clicks sorts highest to lowest.
+       This gives the most popular products top billing!
+       -------------------------------------------------------- */
+    let sortedProducts = Product.allProducts.slice().sort(function(a, b) {
+        return b.clicks - a.clicks;
+    });
+
+    /* --------------------------------------------------------
+       LOOP through every product and build a result item
+       -------------------------------------------------------- */
+    sortedProducts.forEach(function(product) {
+
+        /* Calculate the vote percentage:
+           If a product was shown 3 times and clicked 2 times:
+           (2 / 3) * 100 = 66.7%
+           
+           toFixed(1) rounds to 1 decimal place → "66.7"
+           
+           If views is 0 (never shown) we display 0% to avoid
+           dividing by zero which would give us NaN (Not a Number) */
+        let percentage = product.views > 0
+            ? ((product.clicks / product.views) * 100).toFixed(1)
+            : 0;
+
+        /* Create a list item element for this product */
+        let li = document.createElement('li');
+
+        /* Build the text content for this result item.
+           Example output:
+           "banana — 3 vote(s) | seen 5 time(s) | 60.0% vote rate" */
+        li.textContent = `${product.name} — ${product.clicks} vote(s) | seen ${product.views} time(s) | ${percentage}% vote rate`;
+
+        /* Add the list item to the results list */
+        resultsList.appendChild(li);
+    });
+}
+
+/* ============================================================
+   PART 12 — ATTACH CLICK LISTENER TO VIEW RESULTS BUTTON
+
+   When the user clicks the View Results button,
+   call our showResults function.
+
+   We use { once: true } as a third argument which means
+   the listener automatically removes itself after firing
+   once — so clicking the button multiple times won't
+   duplicate the results list.
+   ============================================================ */
+viewResultsBtn.addEventListener('click', showResults, { once: true });
+
