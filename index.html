@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- The title that appears on the browser tab -->
+    <title>Odd Duck Products</title>
+
+    <!-- Google Font - gives us a custom font instead of boring defaults -->
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Arial&display=swap" rel="stylesheet">
+
+    <!-- Meyer Reset: clears all default browser styles first -->
+    <link rel="stylesheet" href="css/reset.css">
+
+    <!-- Links our CSS file so the page knows where to find its styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- HEADER: The top banner of the page -->
+    <header>
+        <h1>Odd Duck Products</h1>
+        <p>Click the product you'd most like to see made!</p>
+    </header>
+
+    <!-- MAIN: The primary content area -->
+    <main>
+
+        <!-- This section is where our 3 product images will appear.
+             JavaScript will dynamically inject the images here. -->
+        <section id="product-display">
+            <!-- Images will be inserted here by JavaScript -->
+        </section>
+
+        <!-- This paragraph tracks and displays the voting round number.
+             JavaScript will update this as rounds progress. -->
+        <p id="round-counter"></p>
+
+        <!-- This button is HIDDEN at first.
+             It only appears after all voting rounds are complete. -->
+        <button id="view-results" class="hidden">View Results</button>
+
+        <!-- This section is where the results list will appear
+             after voting is complete. Hidden until needed. -->
+        <section id="results-display" class="hidden">
+            <h2>Voting Results</h2>
+            <!-- JavaScript will build the results list here -->
+            <ul id="results-list"></ul>
+        </section>
+
+    </main>
+
+    <!-- FOOTER: Bottom of the page -->
+    <footer>
+        <p>&copy; 2026 Odd Duck Products</p>
+    </footer>
+
+    <!-- Links our JavaScript file. 
+         IMPORTANT: This goes at the BOTTOM of body so the HTML 
+         loads first before JavaScript tries to interact with it -->
+    <script src="js/app.js"></script>
+
+</body>
+</html>

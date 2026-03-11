@@ -1,0 +1,217 @@
+/* ============================================================
+   VARIABLES
+   Defining our color palette in one place so we can reuse
+   them easily throughout the file
+   ============================================================ */
+:root {
+    --bg-color: #f4f1eb;        /* Warm off-white background */
+    --primary-color: #2c3e50;   /* Dark navy for text */
+    --accent-color: #e67e22;    /* Orange accent for buttons */
+    --accent-hover: #d35400;    /* Darker orange for hover state */
+    --white: #ffffff;
+    --shadow: rgba(0,0,0,0.15); /* Subtle shadow for cards */
+}
+
+/* ============================================================
+   BASE / BODY
+   Sets the overall page appearance
+   ============================================================ */
+*, *::before, *::after {
+    box-sizing: border-box; /* Makes sizing elements more predictable */
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+    font-family: 'Arial', sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;          /* Page fills at least the full screen height */
+    display: flex;
+    flex-direction: column;     /* Stacks header, main, footer vertically */
+}
+
+/* ============================================================
+   HEADER
+   The top banner area
+   ============================================================ */
+header {
+    background-color: var(--primary-color);
+    color: var(--white);
+    text-align: center;
+    padding: 30px 20px;
+}
+
+header h1 {
+    font-family: 'Righteous', sans-serif; /* Our custom Google font */
+    font-size: 2.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.1rem;
+    opacity: 0.85; /* Slightly faded so it's secondary to the title */
+}
+
+/* ============================================================
+   MAIN
+   The primary content area
+   ============================================================ */
+main {
+    flex: 1;                /* Pushes footer to bottom of page */
+    display: flex;
+    flex-direction: column;
+    align-items: center;    /* Centers everything horizontally */
+    padding: 40px 20px;
+    gap: 30px;              /* Space between each child element */
+}
+
+/* ============================================================
+   PRODUCT DISPLAY
+   The row of 3 product images
+   ============================================================ */
+#product-display {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;              /* Space between each product card */
+    flex-wrap: wrap;        /* Wraps to next line on smaller screens */
+}
+
+/* Each individual product card (image + name) */
+.product-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--white);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px var(--shadow);  /* Subtle drop shadow */
+    cursor: pointer;                        /* Shows hand cursor on hover */
+    transition: transform 0.2s ease,       /* Smooth scale animation */
+                box-shadow 0.2s ease;
+    width: 220px;
+}
+
+/* When hovering a product card, it lifts up slightly */
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px var(--shadow);
+}
+
+/* The product images inside each card */
+.product-card img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;      /* Keeps consistent size without stretching */
+    border-radius: 8px;
+}
+
+/* The product name label under each image */
+.product-card p {
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    text-transform: capitalize;
+    color: var(--primary-color);
+}
+
+/* ============================================================
+   ROUND COUNTER
+   The "Round X of 5" text
+   ============================================================ */
+#round-counter {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    opacity: 0.7;
+}
+
+/* ============================================================
+   VIEW RESULTS BUTTON
+   ============================================================ */
+#view-results {
+    background-color: var(--accent-color);
+    color: var(--white);
+    border: none;
+    padding: 14px 40px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#view-results:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-2px); /* Subtle lift on hover */
+}
+
+/* ============================================================
+   RESULTS DISPLAY
+   The final results section
+   ============================================================ */
+#results-display {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+#results-display h2 {
+    font-family: 'Righteous', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+/* Each result list item */
+#results-list li {
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    box-shadow: 0 2px 6px var(--shadow);
+    text-align: left;
+}
+
+/* ============================================================
+   HIDDEN UTILITY CLASS
+   Any element with class="hidden" will be invisible.
+   JavaScript will remove this class when it's time to show them.
+   ============================================================ */
+.hidden {
+    display: none;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+    background-color: var(--primary-color);
+    color: var(--white);
+    text-align: center;
+    padding: 20px;
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+```
+
+---
+
+Save both files. Your updated file structure in VS Code should now show:
+```
+odd-duck/
+├── img/          ← 20 images inside
+├── css/
+│   ├── reset.css ← Meyer Reset
+│   └── style.css ← Our custom styles
+├── js/
+│   └── app.js
+├── index.html
+├── .eslintrc.json
+└── README.md
