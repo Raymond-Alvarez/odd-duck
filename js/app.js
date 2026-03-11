@@ -147,14 +147,90 @@ function getRandomProducts() {
 }
 
 /* ============================================================
-   QUICK TEST — let's make sure the picker works before
-   we hook it up to the page display.
-   
-   Call it twice to confirm different products each time
-   and no repeats within the same set of 3.
-   ============================================================ */
-let testPick1 = getRandomProducts();
-let testPick2 = getRandomProducts();
+   PART 6 — DISPLAY FUNCTION
 
-console.log('Test pick 1:', testPick1.map(p => p.name));
-console.log('Test pick 2:', testPick2.map(p => p.name));
+   This function takes our 3 chosen products and builds
+   the actual HTML cards that appear on the page.
+
+   Here's what it does step by step:
+   1. Clears whatever was showing before
+   2. Updates the round counter text
+   3. Loops through our 3 chosen products
+   4. For each one, builds a "card" with an image and name
+   5. Increments that product's views count
+   6. Drops the card onto the page
+   ============================================================ */
+function displayProducts(products) {
+
+    /* Step 1: Clear the previous round's images
+       Setting innerHTML to '' wipes out everything 
+       currently inside the product-display section */
+    productDisplay.innerHTML = '';
+
+    /* Step 2: Update the round counter text
+       This updates the <p id="round-counter"> element
+       so users can see which round they're on */
+    roundCounter.textContent = `Round ${currentRound + 1} of ${TOTAL_ROUNDS}`;
+
+    /* Step 3: Loop through each of the 3 products */
+    products.forEach(function(product) {
+
+        /* Step 4a: Create a <div> for the card container
+           This becomes: <div class="product-card"> */
+        let card = document.createElement('div');
+        card.className = 'product-card';
+
+        /* Step 4b: Create the <img> element
+           This becomes: <img src="img/banana.jpg" alt="banana"> */
+        let img = document.createElement('img');
+        img.src = product.src;
+        img.alt = product.name;  // important for accessibility!
+
+        /* Step 4c: Create the <p> name label under the image
+           This becomes: <p>banana</p> */
+        let name = document.createElement('p');
+        name.textContent = product.name;
+
+        /* Step 4d: Store the product's name on the card element
+           itself as a custom data attribute. We'll use this 
+           later to know WHICH product was clicked.
+           This becomes: <div class="product-card" data-name="banana"> */
+        card.dataset.name = product.name;
+
+        /* Step 5: Increment this product's views counter
+           Every time a product is shown, views goes up by 1 */
+        product.views++;
+
+        /* Step 6: Assemble and attach to the page
+           img and name go INTO the card
+           card goes INTO the productDisplay section */
+        card.appendChild(img);
+        card.appendChild(name);
+        productDisplay.appendChild(card);
+    });
+}
+
+/* ============================================================
+   PART 7 — START ROUND FUNCTION
+
+   This function kicks off each new round by:
+   1. Getting 3 random products
+   2. Storing them in currentProducts
+   3. Passing them to displayProducts() to show on page
+   ============================================================ */
+function startRound() {
+
+    /* Get our 3 random products using the picker we built */
+    currentProducts = getRandomProducts();
+
+    /* Pass them to the display function to show on page */
+    displayProducts(currentProducts);
+}
+
+/* ============================================================
+   KICK IT OFF!
+   
+   This single line starts the whole app by calling startRound.
+   Everything else will be driven by user clicks from here on.
+   ============================================================ */
+startRound();
