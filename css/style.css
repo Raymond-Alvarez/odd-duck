@@ -179,6 +179,35 @@ main {
 }
 
 /* ============================================================
+   RESULTS SECTION HEADERS
+   ============================================================ */
+.results-section-header {
+    background-color: var(--accent-color) !important;
+    color: var(--white) !important;
+    font-family: 'Righteous', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    text-align: center;
+    padding: 10px !important;
+    border-radius: 6px !important;
+    margin-top: 10px !important;
+    box-shadow: none !important;
+}
+
+/* ============================================================
+   RESULTS DIVIDER
+   ============================================================ */
+.results-divider {
+    border: none !important;
+    border-top: 2px dashed var(--primary-color) !important;
+    margin: 10px 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    min-height: 0 !important;
+}
+
+/* ============================================================
    HIDDEN UTILITY CLASS
    Any element with class="hidden" will be invisible.
    JavaScript will remove this class when it's time to show them.
@@ -198,19 +227,3 @@ footer {
     font-size: 0.85rem;
     opacity: 0.9;
 }
-```
-
----
-
-Save both files. Your updated file structure in VS Code should now show:
-```
-odd-duck/
-├── img/          ← 20 images inside
-├── css/
-│   ├── reset.css ← Meyer Reset
-│   └── style.css ← Our custom styles
-├── js/
-│   └── app.js
-├── index.html
-├── .eslintrc.json
-└── README.md

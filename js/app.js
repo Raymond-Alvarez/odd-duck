@@ -62,7 +62,7 @@ new Product('wine-glass', 'img/wine-glass.jpg');
    Keeping them as variables (instead of hard-coding numbers
    everywhere) makes them easy to change for testing.
    ============================================================ */
-const TOTAL_ROUNDS = 5;     // 5 for testing, will change to 25 later
+const TOTAL_ROUNDS = 25;     // 5 for testing, will change to 25 later
 let currentRound = 0;       // tracks which round we're currently on
 let currentProducts = [];   // holds the 3 products currently being shown
 
@@ -343,15 +343,11 @@ productDisplay.addEventListener('click', handleClick);
 /* ============================================================
    PART 11 — SHOW RESULTS FUNCTION
 
-   This function builds and displays the final voting results.
-   It fires when the user clicks the "View Results" button.
+   Displays results in two sections:
+   1. TOP PICKS — products that received at least 1 vote
+   2. ALSO SHOWN — products that were seen but not voted for
 
-   For each product we'll display:
-   - Product name
-   - How many votes (clicks) it received
-   - How many times it was shown (views)
-   - The percentage of times it was clicked when shown
-     (clicks ÷ views × 100, rounded to 1 decimal place)
+   Both sections are sorted by clicks (highest first)
    ============================================================ */
 function showResults() {
 
@@ -361,48 +357,115 @@ function showResults() {
     /* Show the results section by removing its hidden class */
     resultsDisplay.classList.remove('hidden');
 
-    /* Clear any existing results in the list just in case */
+    /* Clear any existing results just in case */
     resultsList.innerHTML = '';
 
     /* --------------------------------------------------------
-       SORT products by clicks (most voted first)
+       SPLIT products into two groups:
        
-       .sort() compares two items at a time (a and b)
-       Returning b.clicks - a.clicks sorts highest to lowest.
-       This gives the most popular products top billing!
+       .filter() creates a NEW array containing only items
+       that pass the test condition.
+       
+       votedProducts  = got at least 1 click
+       unseenProducts = were seen but never voted for
+       neverSeen      = never appeared at all (rare with 25 rounds)
        -------------------------------------------------------- */
-    let sortedProducts = Product.allProducts.slice().sort(function(a, b) {
-        return b.clicks - a.clicks;
-    });
+    let votedProducts = Product.allProducts
+        .filter(function(product) {
+            return product.clicks > 0;
+        })
+        .sort(function(a, b) {
+            return b.clicks - a.clicks;  /* highest votes first */
+        });
+
+    let notVotedProducts = Product.allProducts
+        .filter(function(product) {
+            return product.clicks === 0 && product.views > 0;
+        })
+        .sort(function(a, b) {
+            return b.views - a.views;    /* most seen first */
+        });
+
+    let neverSeenProducts = Product.allProducts
+        .filter(function(product) {
+            return product.views === 0;
+        });
 
     /* --------------------------------------------------------
-       LOOP through every product and build a result item
+       HELPER FUNCTION — buildResultItem
+       
+       Builds one <li> result item for a product.
+       We use a helper function here to avoid repeating
+       the same code three times — DRY principle!
        -------------------------------------------------------- */
-    sortedProducts.forEach(function(product) {
-
-        /* Calculate the vote percentage:
-           If a product was shown 3 times and clicked 2 times:
-           (2 / 3) * 100 = 66.7%
-           
-           toFixed(1) rounds to 1 decimal place → "66.7"
-           
-           If views is 0 (never shown) we display 0% to avoid
-           dividing by zero which would give us NaN (Not a Number) */
+    function buildResultItem(product) {
         let percentage = product.views > 0
             ? ((product.clicks / product.views) * 100).toFixed(1)
             : 0;
 
-        /* Create a list item element for this product */
         let li = document.createElement('li');
-
-        /* Build the text content for this result item.
-           Example output:
-           "banana — 3 vote(s) | seen 5 time(s) | 60.0% vote rate" */
         li.textContent = `${product.name} — ${product.clicks} vote(s) | seen ${product.views} time(s) | ${percentage}% vote rate`;
+        return li;
+    }
 
-        /* Add the list item to the results list */
-        resultsList.appendChild(li);
-    });
+    /* --------------------------------------------------------
+       SECTION 1 — TOP PICKS
+       Only renders if at least one product was voted for
+       -------------------------------------------------------- */
+    if (votedProducts.length > 0) {
+
+        /* Build a section header for Top Picks */
+        let topHeader = document.createElement('li');
+        topHeader.textContent = '🏆 Top Picks';
+        topHeader.className = 'results-section-header';
+        resultsList.appendChild(topHeader);
+
+        /* Add each voted product to the list */
+        votedProducts.forEach(function(product) {
+            resultsList.appendChild(buildResultItem(product));
+        });
+    }
+
+    /* --------------------------------------------------------
+       SECTION 2 — ALSO SHOWN
+       Products seen but not voted for
+       Only renders if there are any such products
+       -------------------------------------------------------- */
+    if (notVotedProducts.length > 0) {
+
+        /* Visual divider between sections */
+        let divider = document.createElement('li');
+        divider.className = 'results-divider';
+        resultsList.appendChild(divider);
+
+        /* Section header for Also Shown */
+        let alsoHeader = document.createElement('li');
+        alsoHeader.textContent = '👀 Also Shown';
+        alsoHeader.className = 'results-section-header';
+        resultsList.appendChild(alsoHeader);
+
+        /* Add each seen-but-not-voted product */
+        notVotedProducts.forEach(function(product) {
+            resultsList.appendChild(buildResultItem(product));
+        });
+    }
+
+    /* --------------------------------------------------------
+       SECTION 3 — NEVER SEEN
+       Only shows up in rare cases with few rounds.
+       With 25 rounds this list should be empty!
+       -------------------------------------------------------- */
+    if (neverSeenProducts.length > 0) {
+
+        let neverHeader = document.createElement('li');
+        neverHeader.textContent = '❌ Never Shown';
+        neverHeader.className = 'results-section-header';
+        resultsList.appendChild(neverHeader);
+
+        neverSeenProducts.forEach(function(product) {
+            resultsList.appendChild(buildResultItem(product));
+        });
+    }
 }
 
 /* ============================================================
