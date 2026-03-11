@@ -185,7 +185,7 @@ main {
    JavaScript will remove this class when it's time to show them.
    ============================================================ */
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* ============================================================

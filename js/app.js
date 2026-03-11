@@ -81,9 +81,6 @@ const viewResultsBtn = document.getElementById('view-results');
 const resultsDisplay = document.getElementById('results-display');
 const resultsList = document.getElementById('results-list');
 
-console.log('All products:', Product.allProducts);
-console.log('Total products:', Product.allProducts.length);
-
 /* ============================================================
    PART 5 — THE RANDOM PICKER FUNCTION
 
@@ -234,3 +231,115 @@ function startRound() {
    Everything else will be driven by user clicks from here on.
    ============================================================ */
 startRound();
+
+/* ============================================================
+   PART 8 — HANDLE CLICK FUNCTION
+
+   This function fires every time a user clicks on the
+   product display section. 
+
+   We attach the listener to the SECTION (the parent container)
+   rather than each individual card. This is called 
+   "EVENT DELEGATION" — instead of adding 3 separate listeners
+   (one per card), we add just ONE listener to the parent and 
+   let clicks "bubble up" to it naturally.
+
+   Think of it like a manager who handles all complaints for 
+   their whole team, rather than each person handling their own.
+   ============================================================ */
+function handleClick(event) {
+
+    /* event.target is whatever element the user actually clicked.
+       It could be the card div, the image, or the name paragraph.
+       
+       We use .closest('.product-card') to crawl UP the DOM tree
+       from whatever was clicked until it finds the parent card div.
+       This ensures we always get the card, not a child element. */
+    let card = event.target.closest('.product-card');
+
+    /* If the user clicked somewhere in the section but NOT on 
+       a card (like the gap between cards), card will be null.
+       We use a guard clause to exit the function immediately
+       in that case — nothing should happen. */
+    if (!card) return;
+
+    /* Remember we stored the product name on the card earlier?
+       card.dataset.name retrieves it.
+       This gives us the name of whichever product was clicked. */
+    let clickedName = card.dataset.name;
+
+    /* Now we search through currentProducts (our 3 shown products)
+       to find the one whose name matches what was clicked.
+       .find() returns the first item in the array that passes
+       the test condition — in this case, name match. */
+    let clickedProduct = currentProducts.find(function(product) {
+        return product.name === clickedName;
+    });
+
+    /* Safety check — if somehow no match was found, exit.
+       This should never happen but it's good defensive coding. */
+    if (!clickedProduct) return;
+
+    /* Add 1 to this product's clicks counter ✅ */
+    clickedProduct.clicks++;
+
+    /* Add 1 to our round tracker */
+    currentRound++;
+
+    /* Log the vote to console so we can watch it working */
+    console.log(`Voted for: ${clickedProduct.name} | Round: ${currentRound} of ${TOTAL_ROUNDS}`);
+    console.log(`${clickedProduct.name} now has ${clickedProduct.clicks} click(s) and ${clickedProduct.views} view(s)`);
+
+    /* --------------------------------------------------------
+       CHECK IF VOTING IS OVER
+       
+       If currentRound equals TOTAL_ROUNDS (5) we are done!
+       Otherwise load the next round.
+       -------------------------------------------------------- */
+    if (currentRound >= TOTAL_ROUNDS) {
+
+        /* Voting is over — call endGame() which we'll build next */
+        endGame();
+
+    } else {
+
+        /* Still more rounds to go — start the next one */
+        startRound();
+    }
+}
+
+/* ============================================================
+   PART 9 — END GAME FUNCTION
+
+   Called when all 5 rounds are complete.
+   
+   1. Removes the click listener so no more votes can happen
+   2. Hides the product display and round counter
+   3. Shows the "View Results" button
+   ============================================================ */
+function endGame() {
+
+    /* Remove the event listener so clicking no longer does anything.
+       IMPORTANT: You must pass the exact same function reference
+       that was used in addEventListener — that's why handleClick
+       is a named function and not an anonymous arrow function! */
+    productDisplay.removeEventListener('click', handleClick);
+
+    /* Hide the product cards and round counter — voting is done */
+    productDisplay.classList.add('hidden');
+    roundCounter.classList.add('hidden');
+
+    /* Show the View Results button by removing its hidden class */
+    viewResultsBtn.classList.remove('hidden');
+}
+
+/* ============================================================
+   PART 10 — ATTACH THE EVENT LISTENER
+
+   This is where we actually "turn on" the click detection.
+   We attach it to productDisplay (the section element) and
+   tell it to call handleClick whenever a click happens inside.
+
+   This line goes AFTER both functions are defined above.
+   ============================================================ */
+productDisplay.addEventListener('click', handleClick);
