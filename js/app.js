@@ -83,3 +83,78 @@ const resultsList = document.getElementById('results-list');
 
 console.log('All products:', Product.allProducts);
 console.log('Total products:', Product.allProducts.length);
+
+/* ============================================================
+   PART 5 — THE RANDOM PICKER FUNCTION
+
+   Math.random() generates a decimal number between 0 and 1
+   For example: 0.4372, 0.9812, 0.0023
+
+   To turn that into a usable index number we:
+   1. Multiply by the array length  → 0.4372 * 19 = 8.3068
+   2. Math.floor() rounds it down   → 8.3068 becomes 8
+   3. Now we have a valid index!    → Product.allProducts[8]
+
+   Example with our 19 products (indexes 0-18):
+   Math.floor(Math.random() * 19) gives us a number 0 through 18
+   ============================================================ */
+
+/* ============================================================
+   This array remembers which products showed in the 
+   LAST round so we can prevent immediate repeats.
+   It starts empty because there is no previous round yet.
+   ============================================================ */
+let lastShownProducts = [];
+
+function getRandomProducts() {
+
+    /* selectedIndexes keeps track of which products we've 
+       already picked FOR THIS round so we don't pick 
+       the same one twice in the same round */
+    let selectedIndexes = [];
+    
+    /* chosen will hold our 3 final Product objects */
+    let chosen = [];
+
+    /* We need exactly 3 products so we loop 3 times */
+    while (chosen.length < 3) {
+
+        /* Pick a random index between 0 and 18 */
+        let randomIndex = Math.floor(Math.random() * Product.allProducts.length);
+
+        /* Check TWO conditions before accepting this pick:
+           1. Not already chosen in THIS round (not in selectedIndexes)
+           2. Not shown in the LAST round (not in lastShownProducts)
+           
+           The ! means "NOT" — so we only proceed if both are true */
+        if (!selectedIndexes.includes(randomIndex) && 
+            !lastShownProducts.includes(randomIndex)) {
+
+            /* This pick passes both checks — accept it! */
+            selectedIndexes.push(randomIndex);
+            chosen.push(Product.allProducts[randomIndex]);
+        }
+
+        /* If either check failed, the while loop just tries 
+           again with a new random number automatically */
+    }
+
+    /* Remember these indexes for next round's repeat-check */
+    lastShownProducts = selectedIndexes;
+
+    /* Hand back our array of 3 chosen Product objects */
+    return chosen;
+}
+
+/* ============================================================
+   QUICK TEST — let's make sure the picker works before
+   we hook it up to the page display.
+   
+   Call it twice to confirm different products each time
+   and no repeats within the same set of 3.
+   ============================================================ */
+let testPick1 = getRandomProducts();
+let testPick2 = getRandomProducts();
+
+console.log('Test pick 1:', testPick1.map(p => p.name));
+console.log('Test pick 2:', testPick2.map(p => p.name));
