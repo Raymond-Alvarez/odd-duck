@@ -25,7 +25,7 @@ A voting app built for Odd Duck Product Co. Employees view 3 random product imag
 - Chart.js (v3.7.0)
 
 ## Lighthouse Accessibility Score
-![Lighthouse Accessibility Score](Lighthouse_Score.png)
+![Lighthouse Accessibility Score](img/Lighthouse_Score.png)
 
 ## Author
 Raymond Alvarez
