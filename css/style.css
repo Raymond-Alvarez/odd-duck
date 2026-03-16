@@ -239,4 +239,20 @@ footer {
     background-color: var(--white);
     border-radius: 12px;
     box-shadow: 0 4px 12px var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+/* Bar chart — full width */
+#myChart {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+/* Doughnut — smaller and centered */
+#myDoughnut {
+    width: 400px !important;
+    height: 400px !important;
+    align-self: center;
 }

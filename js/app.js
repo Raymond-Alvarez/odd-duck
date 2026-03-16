@@ -62,7 +62,7 @@ new Product('wine-glass', 'img/wine-glass.jpg');
    Keeping them as variables (instead of hard-coding numbers
    everywhere) makes them easy to change for testing.
    ============================================================ */
-const TOTAL_ROUNDS = 5;     // 5 for testing, will change to 25 later
+const TOTAL_ROUNDS = 25;     // 5 for testing, will change to 25 later
 let currentRound = 0;       // tracks which round we're currently on
 let currentProducts = [];   // holds the 3 products currently being shown
 
@@ -152,13 +152,6 @@ function getRandomProducts() {
           cutting off the oldest ones from the front
        -------------------------------------------------------- */
     recentlyShown = [...recentlyShown, ...selectedIndexes].slice(-MEMORY_SIZE);
-
-    /* TEMPORARY VERIFICATION LOG — remove after testing */
-    console.log('Recently shown window:', recentlyShown);
-    console.log('Window size:', recentlyShown.length);
-    console.log('This round:', chosen.map(p => p.name));
-    console.log('---');
-
     return chosen;
 }
 
@@ -500,18 +493,18 @@ function renderChart() {
         labels: productNames,
         datasets: [
             {
-                label: 'Votes',
+                label: 'Likes',
                 data: productClicks,
                 backgroundColor: 'rgba(230, 126, 34, 0.5)',  /* orange — matches our accent color */
                 borderColor: 'rgba(230, 126, 34, 1)',
-                borderWidth: 1
+                borderWidth: 3
             },
             {
                 label: 'Views',
                 data: productViews,
                 backgroundColor: 'rgba(26, 37, 47, 0.5)',    /* navy — matches our primary color */
                 borderColor: 'rgba(26, 37, 47, 1)',
-                borderWidth: 1
+                borderWidth: 3
             }
         ]
     };
@@ -522,26 +515,72 @@ function renderChart() {
        'options' lets us customize behavior:
        - scales.y.beginAtZero makes the y-axis start at 0
          instead of whatever the lowest value is */
-    const config = {
-        type: 'bar',
-        data: data,
-        options: {
+      const config = {
+         type: 'bar',
+         data: data,
+         options: {
+            layout: {
+                  padding: {
+                     top: 20        /* adds breathing room between legend and chart */
+                  }
+            },
             scales: {
-                y: {
-                    beginAtZero: true
-                }
+                  y: {
+                     beginAtZero: true,
+                     max: 5,        /* shrinks the chart table — adjust if needed */
+                     ticks: {
+                        font: {
+                              size: 16,
+                              weight: 'bold'   /* makes y-axis numbers darker/stronger */
+                        },
+                        color: '#1a252f'     /* matches our dark navy primary color */
+                     },
+                     grid: {
+                        color: 'rgba(0,0,0,0.08)'  /* subtle grid lines */
+                     }
+                  },
+                  x: {
+                     ticks: {
+                        font: {
+                              size: 15,
+                              weight: 'bold'   /* makes product names stronger */
+                        },
+                        color: '#1a252f'     /* dark navy for better readability */
+                     },
+                     grid: {
+                        display: false       /* removes vertical grid lines — cleaner look */
+                     }
+                  }
             },
             plugins: {
-                legend: {
-                    position: 'top'
-                },
-                title: {
-                    display: true,
-                    text: 'Voting Results'
-                }
+                  legend: {
+                     position: 'top',
+                     labels: {
+                        font: {
+                              size: 16
+                        },
+                        color: '#1a252f',
+                        padding: 20         /* pushes legend away from chart top */
+                     },
+                     margin: {
+                        bottom: 30
+                     }
+                  },
+                  title: {
+                     display: true,
+                     text: 'Odd Duck Products — Voting Results',
+                     font: {
+                        size: 24,            /* bigger title */
+                        weight: 'bold'
+                     },
+                     color: '#1a252f',
+                     padding: {
+                        bottom: 10           /* space between title and legend */
+                     }
+                  }
             }
-        }
-    };
+         }
+      };
 
     /* Step 6: Get the canvas element and create the chart
        
@@ -550,7 +589,126 @@ function renderChart() {
        Chart object using the canvas and config we provide */
     let canvas = document.getElementById('myChart');
     new Chart(canvas, config);
+
+    renderDoughnut();
 }
+
+/* ============================================================
+   PART 12b — RENDER DOUGHNUT CHART FUNCTION
+
+   Shows the proportion of total votes each product received.
+   Only products that received at least 1 vote will appear
+   in the doughnut — zero-vote products would just clutter it.
+
+   The doughnut tells a different story than the bar chart:
+   - Bar chart shows RAW numbers (how many votes/views)
+   - Doughnut shows PROPORTION (what SHARE of votes each got)
+   ============================================================ */
+function renderDoughnut() {
+
+    /* Step 1: Filter to only products that received votes
+       No point showing products with 0 votes in a 
+       proportional chart — they'd just be invisible slices */
+    let votedProducts = Product.allProducts.filter(function(product) {
+        return product.clicks > 0;
+    });
+
+    /* Step 2: Build name and clicks arrays from voted products only */
+    let names = votedProducts.map(function(product) {
+        return product.name;
+    });
+
+    let clicks = votedProducts.map(function(product) {
+        return product.clicks;
+    });
+
+    /* Step 3: Build a color array — one color per slice
+       We generate colors automatically so it works for
+       any number of voted products */
+    let backgroundColors = [
+        'rgba(230, 126, 34, 0.7)',   /* orange */
+        'rgba(26, 37, 47, 0.7)',     /* navy */
+        'rgba(52, 152, 219, 0.7)',   /* blue */
+        'rgba(46, 204, 113, 0.7)',   /* green */
+        'rgba(155, 89, 182, 0.7)',   /* purple */
+        'rgba(231, 76, 60, 0.7)',    /* red */
+        'rgba(241, 196, 15, 0.7)',   /* yellow */
+        'rgba(26, 188, 156, 0.7)',   /* teal */
+        'rgba(189, 195, 199, 0.7)',  /* gray */
+        'rgba(243, 156, 18, 0.7)',   /* amber */
+    ];
+
+    let borderColors = backgroundColors.map(function(color) {
+        return color.replace('0.7', '1'); /* full opacity for borders */
+    });
+
+    /* Step 4: Build the data object */
+    const doughnutData = {
+        labels: names,
+        datasets: [{
+            label: 'Vote Share',
+            data: clicks,
+            backgroundColor: backgroundColors.slice(0, names.length),
+            borderColor: borderColors.slice(0, names.length),
+            borderWidth: 2,
+            hoverOffset: 10      /* slices pop out slightly on hover */
+        }]
+    };
+
+    /* Step 5: Build the config object */
+    const doughnutConfig = {
+        type: 'doughnut',
+        data: doughnutData,
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Vote Share by Product',
+                    font: {
+                        size: 24,
+                        weight: 'bold'
+                    },
+                    color: '#1a252f',
+                    padding: {
+                        bottom: 20
+                    }
+                },
+                legend: {
+                    position: 'right',   /* legend on the side for doughnuts */
+                    labels: {
+                        font: {
+                            size: 40
+                        },
+                        color: '#1a252f',
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        /* Custom tooltip shows percentage as well as raw votes */
+                        label: function(context) {
+                            let total = context.dataset.data.reduce(function(a, b) {
+                                return a + b;
+                            }, 0);
+                            let value = context.parsed;
+                            let percentage = ((value / total) * 100).toFixed(1);
+                            return ` ${context.label}: ${value} vote(s) — ${percentage}%`;
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    /* Step 6: Get the canvas and create the doughnut chart */
+    let doughnutCanvas = document.getElementById('myDoughnut');
+    new Chart(doughnutCanvas, doughnutConfig);
+
+    
+}
+
+
 
 /* ============================================================
    PART 13 — ATTACH CLICK LISTENER TO VIEW RESULTS BUTTON
