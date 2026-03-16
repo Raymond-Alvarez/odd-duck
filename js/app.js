@@ -62,7 +62,7 @@ new Product('wine-glass', 'img/wine-glass.jpg');
    Keeping them as variables (instead of hard-coding numbers
    everywhere) makes them easy to change for testing.
    ============================================================ */
-const TOTAL_ROUNDS = 25;     // 5 for testing, will change to 25 later
+const TOTAL_ROUNDS = 5;     // 5 for testing, will change to 25 later
 let currentRound = 0;       // tracks which round we're currently on
 let currentProducts = [];   // holds the 3 products currently being shown
 
@@ -78,6 +78,7 @@ let currentProducts = [];   // holds the 3 products currently being shown
 const productDisplay = document.getElementById('product-display');
 const roundCounter = document.getElementById('round-counter');
 const viewResultsBtn = document.getElementById('view-results');
+const chartContainer = document.getElementById('chart-container');
 const resultsDisplay = document.getElementById('results-display');
 const resultsList = document.getElementById('results-list');
 
@@ -101,45 +102,63 @@ const resultsList = document.getElementById('results-list');
    LAST round so we can prevent immediate repeats.
    It starts empty because there is no previous round yet.
    ============================================================ */
-let lastShownProducts = [];
+/* ============================================================
+   We now remember the last 4 rounds (12 images):
+   
+   Think of it like a queue at a coffee shop:
+   - New customers (indexes) join at the BACK
+   - Old customers leave from the FRONT
+   - The line never gets longer than 12 people
+   ============================================================ */
+let recentlyShown = [];          // Replaces lastShownProducts
+const MEMORY_SIZE = 12;          // 4 rounds × 3 images = 12
 
 function getRandomProducts() {
+    let available = Product.allProducts.length - recentlyShown.length;
+    if (available < 3) {
+        recentlyShown = recentlyShown.slice(-6); // shrink to last 2 rounds
+        console.log('Safety check triggered — memory window shrunk!');
+    }
 
-    /* selectedIndexes keeps track of which products we've 
-       already picked FOR THIS round so we don't pick 
-       the same one twice in the same round */
     let selectedIndexes = [];
-    
-    /* chosen will hold our 3 final Product objects */
     let chosen = [];
 
-    /* We need exactly 3 products so we loop 3 times */
     while (chosen.length < 3) {
 
-        /* Pick a random index between 0 and 18 */
         let randomIndex = Math.floor(Math.random() * Product.allProducts.length);
 
-        /* Check TWO conditions before accepting this pick:
-           1. Not already chosen in THIS round (not in selectedIndexes)
-           2. Not shown in the LAST round (not in lastShownProducts)
-           
-           The ! means "NOT" — so we only proceed if both are true */
+        /* Check TWO conditions:
+           1. Not already picked THIS round
+           2. Not in our 12-image memory window */
         if (!selectedIndexes.includes(randomIndex) && 
-            !lastShownProducts.includes(randomIndex)) {
+            !recentlyShown.includes(randomIndex)) {
 
-            /* This pick passes both checks — accept it! */
             selectedIndexes.push(randomIndex);
             chosen.push(Product.allProducts[randomIndex]);
         }
-
-        /* If either check failed, the while loop just tries 
-           again with a new random number automatically */
     }
 
-    /* Remember these indexes for next round's repeat-check */
-    lastShownProducts = selectedIndexes;
+    /* --------------------------------------------------------
+       THE KEY CHANGE — update the sliding window
+       
+       Instead of replacing lastShownProducts entirely,
+       we ADD the new 3 indexes to our memory and then
+       TRIM it back to 12 if it gets too long.
+       
+       Step by step:
+       1. ...spread means "unpack all existing items"
+       2. We add the 3 new indexes to the END
+       3. .slice(-12) keeps only the LAST 12 items
+          cutting off the oldest ones from the front
+       -------------------------------------------------------- */
+    recentlyShown = [...recentlyShown, ...selectedIndexes].slice(-MEMORY_SIZE);
 
-    /* Hand back our array of 3 chosen Product objects */
+    /* TEMPORARY VERIFICATION LOG — remove after testing */
+    console.log('Recently shown window:', recentlyShown);
+    console.log('Window size:', recentlyShown.length);
+    console.log('This round:', chosen.map(p => p.name));
+    console.log('---');
+
     return chosen;
 }
 
@@ -322,7 +341,6 @@ function endGame() {
     productDisplay.removeEventListener('click', handleClick);
 
     /* Hide the product cards and round counter — voting is done */
-    productDisplay.classList.add('hidden');
     roundCounter.classList.add('hidden');
 
     /* Show the View Results button by removing its hidden class */
@@ -342,40 +360,22 @@ productDisplay.addEventListener('click', handleClick);
 
 /* ============================================================
    PART 11 — SHOW RESULTS FUNCTION
-
-   Displays results in two sections:
-   1. TOP PICKS — products that received at least 1 vote
-   2. ALSO SHOWN — products that were seen but not voted for
-
-   Both sections are sorted by clicks (highest first)
+   Commented out — replaced by bar chart on day 2
    ============================================================ */
+
+/*
 function showResults() {
 
-    /* Hide the View Results button — we don't need it anymore */
     viewResultsBtn.classList.add('hidden');
-
-    /* Show the results section by removing its hidden class */
     resultsDisplay.classList.remove('hidden');
-
-    /* Clear any existing results just in case */
     resultsList.innerHTML = '';
 
-    /* --------------------------------------------------------
-       SPLIT products into two groups:
-       
-       .filter() creates a NEW array containing only items
-       that pass the test condition.
-       
-       votedProducts  = got at least 1 click
-       unseenProducts = were seen but never voted for
-       neverSeen      = never appeared at all (rare with 25 rounds)
-       -------------------------------------------------------- */
     let votedProducts = Product.allProducts
         .filter(function(product) {
             return product.clicks > 0;
         })
         .sort(function(a, b) {
-            return b.clicks - a.clicks;  /* highest votes first */
+            return b.clicks - a.clicks;
         });
 
     let notVotedProducts = Product.allProducts
@@ -383,7 +383,7 @@ function showResults() {
             return product.clicks === 0 && product.views > 0;
         })
         .sort(function(a, b) {
-            return b.views - a.views;    /* most seen first */
+            return b.views - a.views;
         });
 
     let neverSeenProducts = Product.allProducts
@@ -391,82 +391,51 @@ function showResults() {
             return product.views === 0;
         });
 
-    /* --------------------------------------------------------
-       HELPER FUNCTION — buildResultItem
-       
-       Builds one <li> result item for a product.
-       We use a helper function here to avoid repeating
-       the same code three times — DRY principle!
-       -------------------------------------------------------- */
     function buildResultItem(product) {
         let percentage = product.views > 0
             ? ((product.clicks / product.views) * 100).toFixed(1)
             : 0;
-
         let li = document.createElement('li');
         li.textContent = `${product.name} — ${product.clicks} vote(s) | seen ${product.views} time(s) | ${percentage}% vote rate`;
         return li;
     }
 
-    /* --------------------------------------------------------
-       SECTION 1 — TOP PICKS
-       Only renders if at least one product was voted for
-       -------------------------------------------------------- */
     if (votedProducts.length > 0) {
-
-        /* Build a section header for Top Picks */
         let topHeader = document.createElement('li');
         topHeader.textContent = '🏆 Top Picks';
         topHeader.className = 'results-section-header';
         resultsList.appendChild(topHeader);
-
-        /* Add each voted product to the list */
         votedProducts.forEach(function(product) {
             resultsList.appendChild(buildResultItem(product));
         });
     }
 
-    /* --------------------------------------------------------
-       SECTION 2 — ALSO SHOWN
-       Products seen but not voted for
-       Only renders if there are any such products
-       -------------------------------------------------------- */
     if (notVotedProducts.length > 0) {
-
-        /* Visual divider between sections */
         let divider = document.createElement('li');
         divider.className = 'results-divider';
         resultsList.appendChild(divider);
-
-        /* Section header for Also Shown */
         let alsoHeader = document.createElement('li');
         alsoHeader.textContent = '👀 Also Shown';
         alsoHeader.className = 'results-section-header';
         resultsList.appendChild(alsoHeader);
-
-        /* Add each seen-but-not-voted product */
         notVotedProducts.forEach(function(product) {
             resultsList.appendChild(buildResultItem(product));
         });
     }
 
-    /* --------------------------------------------------------
-       SECTION 3 — NEVER SEEN
-       Only shows up in rare cases with few rounds.
-       With 25 rounds this list should be empty!
-       -------------------------------------------------------- */
     if (neverSeenProducts.length > 0) {
-
         let neverHeader = document.createElement('li');
         neverHeader.textContent = '❌ Never Shown';
         neverHeader.className = 'results-section-header';
         resultsList.appendChild(neverHeader);
-
         neverSeenProducts.forEach(function(product) {
             resultsList.appendChild(buildResultItem(product));
         });
     }
 }
+
+*/
+
 
 /* ============================================================
    PART 12 — ATTACH CLICK LISTENER TO VIEW RESULTS BUTTON
@@ -479,5 +448,113 @@ function showResults() {
    once — so clicking the button multiple times won't
    duplicate the results list.
    ============================================================ */
-viewResultsBtn.addEventListener('click', showResults, { once: true });
+// viewResultsBtn.addEventListener('click', showResults, { once: true });
 
+/* ============================================================
+   PART 12 — RENDER CHART FUNCTION
+
+   Called when the user clicks "View Results".
+   
+   Uses Chart.js library (loaded from CDN) to build a 
+   bar chart showing votes and views for every product.
+
+   Chart.js needs three things:
+   1. A <canvas> element to draw on
+   2. A data object with labels and datasets
+   3. A config object telling it what type of chart to make
+   ============================================================ */
+function renderChart() {
+
+    /* Step 1: Show the chart container by removing hidden class */
+    chartContainer.classList.remove('hidden');
+
+    /* Step 2: Hide the View Results button — no longer needed */
+    viewResultsBtn.classList.add('hidden');
+
+    /* Step 3: Build arrays of names, clicks, and views
+       Chart.js needs flat arrays — one value per product
+       
+       We loop through all 19 products and pull out
+       just the data points we need for the chart */
+    let productNames = [];
+    let productClicks = [];
+    let productViews = [];
+
+    for (let i = 0; i < Product.allProducts.length; i++) {
+        productNames.push(Product.allProducts[i].name);
+        productClicks.push(Product.allProducts[i].clicks);
+        productViews.push(Product.allProducts[i].views);
+    }
+
+    /* Step 4: Build the data object
+       
+       'labels' = the x-axis labels (product names)
+       'datasets' = the bars themselves — one dataset per bar group
+       Each dataset needs:
+       - label: what shows in the legend
+       - data: the array of values
+       - backgroundColor: the bar fill color
+       - borderColor: the bar outline color
+       - borderWidth: thickness of the outline */
+    const data = {
+        labels: productNames,
+        datasets: [
+            {
+                label: 'Votes',
+                data: productClicks,
+                backgroundColor: 'rgba(230, 126, 34, 0.5)',  /* orange — matches our accent color */
+                borderColor: 'rgba(230, 126, 34, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Views',
+                data: productViews,
+                backgroundColor: 'rgba(26, 37, 47, 0.5)',    /* navy — matches our primary color */
+                borderColor: 'rgba(26, 37, 47, 1)',
+                borderWidth: 1
+            }
+        ]
+    };
+
+    /* Step 5: Build the config object
+       
+       'type' tells Chart.js what kind of chart to draw
+       'options' lets us customize behavior:
+       - scales.y.beginAtZero makes the y-axis start at 0
+         instead of whatever the lowest value is */
+    const config = {
+        type: 'bar',
+        data: data,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                title: {
+                    display: true,
+                    text: 'Voting Results'
+                }
+            }
+        }
+    };
+
+    /* Step 6: Get the canvas element and create the chart
+       
+       new Chart(canvas, config) is a Chart.js constructor —
+       just like our Product constructor, it creates a new
+       Chart object using the canvas and config we provide */
+    let canvas = document.getElementById('myChart');
+    new Chart(canvas, config);
+}
+
+/* ============================================================
+   PART 13 — ATTACH CLICK LISTENER TO VIEW RESULTS BUTTON
+   
+   Now points to renderChart instead of showResults
+   ============================================================ */
+viewResultsBtn.addEventListener('click', renderChart, { once: true });

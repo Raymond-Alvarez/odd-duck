@@ -227,3 +227,16 @@ footer {
     font-size: 0.85rem;
     opacity: 0.9;
 }
+
+/* ============================================================
+   CHART CONTAINER
+   ============================================================ */
+#chart-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+}
