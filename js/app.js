@@ -32,27 +32,113 @@ function Product(name, src) {
    ============================================================ */
 Product.allProducts = [];   // This array will hold all 20 product objects
 
+/* ============================================================
+   PART 2b — LOCAL STORAGE FUNCTIONS
+
+   saveToLocalStorage() — converts our products array to a 
+   JSON string and saves it to the browser's local storage.
+   Called after every vote so data is always current.
+
+   loadFromLocalStorage() — checks if saved data exists,
+   parses it back from JSON, and rebuilds each Product object
+   by running it back through the constructor.
+
+   WHY rebuild through constructor?
+   JSON.parse() gives us plain objects like:
+   { name: 'banana', src: '...', views: 2, clicks: 1 }
+   But these plain objects don't have Product as their 
+   blueprint — they're just generic objects.
+   Running them through new Product() restores that connection.
+   ============================================================ */
+
+function saveToLocalStorage() {
+    /* JSON.stringify() converts our array of Product objects
+       into a string like:
+       '[{"name":"banana","src":"img/banana.jpg","views":2,"clicks":1},...]'
+       Local storage can only store strings — not objects! */
+    let stringifiedProducts = JSON.stringify(Product.allProducts);
+    localStorage.setItem('oddDuckProducts', stringifiedProducts);
+    console.log('Saved to local storage:', stringifiedProducts);
+}
+
+function loadFromLocalStorage() {
+    /* Check if we have saved data first */
+    let savedProducts = localStorage.getItem('oddDuckProducts');
+
+    /* If nothing saved yet, return false so we know
+       to create fresh products instead */
+    if (!savedProducts) {
+        return false;
+    }
+
+    /* Parse the JSON string back into an array of plain objects */
+    let parsedProducts = JSON.parse(savedProducts);
+    console.log('Loaded from local storage:', parsedProducts);
+
+    /* IMPORTANT: Clear the allProducts array first so we don't
+       end up with duplicates when we push new objects in */
+   
+    /* Loop through each plain object and run it back through
+       the Product constructor to restore it properly.
+       
+       We temporarily disable the push inside the constructor
+       by passing the saved views and clicks values back in.
+       
+       Actually — our constructor auto-pushes via push(this)
+       so we just need to create each product and then 
+       manually set its views and clicks from saved data */
+    for (let i = 0; i < parsedProducts.length; i++) {
+        let savedProduct = parsedProducts[i];
+
+        /* Create a fresh Product — this auto-pushes to allProducts
+           and sets views/clicks to 0 */
+        let restoredProduct = new Product(savedProduct.name, savedProduct.src);
+
+        /* Now restore the saved views and clicks counts */
+        restoredProduct.views = savedProduct.views;
+        restoredProduct.clicks = savedProduct.clicks;
+    }
+
+    return true; /* signal that we successfully loaded saved data */
+}
+
 // Creating one product object per image:
 // new Product('name', 'img/filename.jpg')
-new Product('bag', 'img/bag.jpg');
-new Product('banana', 'img/banana.jpg');
-new Product('bathroom', 'img/bathroom.jpg');
-new Product('boots', 'img/boots.jpg');
-new Product('breakfast', 'img/breakfast.jpg');
-new Product('bubblegum', 'img/bubblegum.jpg');
-new Product('chair', 'img/chair.jpg');
-new Product('cthulhu', 'img/cthulhu.jpg');
-new Product('dog-duck', 'img/dog-duck.jpg');
-new Product('dragon', 'img/dragon.jpg');
-new Product('pen', 'img/pen.jpg');
-new Product('pet-sweep', 'img/pet-sweep.jpg');
-new Product('scissors', 'img/scissors.jpg');
-new Product('shark', 'img/shark.jpg');
-new Product('sweep', 'img/sweep.jpg');
-new Product('tauntaun', 'img/tauntaun.jpg');
-new Product('unicorn', 'img/unicorn.jpg');
-new Product('water-can', 'img/water-can.jpg');
-new Product('wine-glass', 'img/wine-glass.jpg');
+
+/* --------------------------------------------------------
+   Try to load saved products from local storage first.
+   If nothing saved, create fresh products instead.
+   
+   This is the key decision point on every page load:
+   - First visit ever? → create fresh products
+   - Return visit? → restore saved vote/view counts
+   -------------------------------------------------------- */
+let dataLoaded = loadFromLocalStorage();
+
+if (!dataLoaded) {
+   // Creating one product object per image:
+   // new Product('name', 'img/filename.jpg')
+   /* No saved data found — create all products fresh */
+    new Product('bag', 'img/bag.jpg');
+    new Product('banana', 'img/banana.jpg');
+    new Product('bathroom', 'img/bathroom.jpg');
+    new Product('boots', 'img/boots.jpg');
+    new Product('breakfast', 'img/breakfast.jpg');
+    new Product('bubblegum', 'img/bubblegum.jpg');
+    new Product('chair', 'img/chair.jpg');
+    new Product('cthulhu', 'img/cthulhu.jpg');
+    new Product('dog-duck', 'img/dog-duck.jpg');
+    new Product('dragon', 'img/dragon.jpg');
+    new Product('pen', 'img/pen.jpg');
+    new Product('pet-sweep', 'img/pet-sweep.jpg');
+    new Product('scissors', 'img/scissors.jpg');
+    new Product('shark', 'img/shark.jpg');
+    new Product('sweep', 'img/sweep.jpg');
+    new Product('tauntaun', 'img/tauntaun.jpg');
+    new Product('unicorn', 'img/unicorn.jpg');
+    new Product('water-can', 'img/water-can.jpg');
+    new Product('wine-glass', 'img/wine-glass.jpg');
+}
     
    
 /* ============================================================
@@ -62,7 +148,7 @@ new Product('wine-glass', 'img/wine-glass.jpg');
    Keeping them as variables (instead of hard-coding numbers
    everywhere) makes them easy to change for testing.
    ============================================================ */
-const TOTAL_ROUNDS = 25;     // 5 for testing, will change to 25 later
+const TOTAL_ROUNDS = 5;     // 5 for testing, will change to 25 later
 let currentRound = 0;       // tracks which round we're currently on
 let currentProducts = [];   // holds the 3 products currently being shown
 
@@ -75,6 +161,8 @@ let currentProducts = [];   // holds the 3 products currently being shown
    
    document.getElementById() finds an element by its id="..."
    ============================================================ */
+
+const resetBtn = document.getElementById('reset-btn');
 const productDisplay = document.getElementById('product-display');
 const roundCounter = document.getElementById('round-counter');
 const viewResultsBtn = document.getElementById('view-results');
@@ -82,6 +170,51 @@ const chartContainer = document.getElementById('chart-container');
 const resultsDisplay = document.getElementById('results-display');
 const resultsList = document.getElementById('results-list');
 
+/* ============================================================
+   PART 4b — DARK/LIGHT MODE WITH LOCAL STORAGE
+
+   Follows the same pattern as the class demo:
+   - applyDarkMode() switches to dark and saves preference
+   - applyLightMode() switches to light and saves preference
+   - loadTheme() reads saved preference on page load
+   ============================================================ */
+const themeToggle = document.getElementById('theme-toggle');
+const themeLabel = document.getElementById('theme-label');
+
+function applyDarkMode() {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeLabel.textContent = '🌙 Dark Mode';
+    themeToggle.checked = true;
+    localStorage.setItem('oddDuckTheme', 'dark');
+}
+
+function applyLightMode() {
+    document.documentElement.removeAttribute('data-theme');
+    themeLabel.textContent = '☀️ Light Mode';
+    themeToggle.checked = false;
+    localStorage.setItem('oddDuckTheme', 'light');
+}
+
+function loadTheme() {
+    let savedTheme = localStorage.getItem('oddDuckTheme');
+    if (savedTheme === 'dark') {
+        applyDarkMode();
+    } else {
+        applyLightMode();
+    }
+}
+
+/* Toggle listener — switches mode when checkbox clicked */
+themeToggle.addEventListener('change', function() {
+    if (this.checked) {
+        applyDarkMode();
+    } else {
+        applyLightMode();
+    }
+});
+
+/* Load saved theme immediately on page load */
+loadTheme();
 /* ============================================================
    PART 5 — THE RANDOM PICKER FUNCTION
 
@@ -209,6 +342,9 @@ function displayProducts(products) {
         /* Step 5: Increment this product's views counter
            Every time a product is shown, views goes up by 1 */
         product.views++;
+        /* Save updated views to local storage */
+        saveToLocalStorage();    // ← ADD THIS LINE
+
 
         /* Step 6: Assemble and attach to the page
            img and name go INTO the card
@@ -295,6 +431,9 @@ function handleClick(event) {
     /* Add 1 to this product's clicks counter ✅ */
     clickedProduct.clicks++;
 
+    /* Save updated data to local storage immediately */
+    saveToLocalStorage();    // ← ADD THIS LINE
+
     /* Add 1 to our round tracker */
     currentRound++;
 
@@ -308,7 +447,7 @@ function handleClick(event) {
 
         /* Voting is over — call endGame() which we'll build next */
         endGame();
-
+      
     } else {
 
         /* Still more rounds to go — start the next one */
@@ -326,18 +465,10 @@ function handleClick(event) {
    3. Shows the "View Results" button
    ============================================================ */
 function endGame() {
-
-    /* Remove the event listener so clicking no longer does anything.
-       IMPORTANT: You must pass the exact same function reference
-       that was used in addEventListener — that's why handleClick
-       is a named function and not an anonymous arrow function! */
     productDisplay.removeEventListener('click', handleClick);
-
-    /* Hide the product cards and round counter — voting is done */
     roundCounter.classList.add('hidden');
-
-    /* Show the View Results button by removing its hidden class */
     viewResultsBtn.classList.remove('hidden');
+    resetBtn.classList.remove('hidden');    // ← ADD THIS LINE HERE
 }
 
 /* ============================================================
@@ -519,6 +650,7 @@ function renderChart() {
          type: 'bar',
          data: data,
          options: {
+            maintainAspectRatio: false,    
             layout: {
                   padding: {
                      top: 20        /* adds breathing room between legend and chart */
@@ -651,7 +783,7 @@ function renderDoughnut() {
             backgroundColor: backgroundColors.slice(0, names.length),
             borderColor: borderColors.slice(0, names.length),
             borderWidth: 2,
-            hoverOffset: 10      /* slices pop out slightly on hover */
+            hoverOffset: 20      /* slices pop out slightly on hover */
         }]
     };
 
@@ -678,7 +810,7 @@ function renderDoughnut() {
                     position: 'right',   /* legend on the side for doughnuts */
                     labels: {
                         font: {
-                            size: 40
+                            size: 16
                         },
                         color: '#1a252f',
                         padding: 15
@@ -715,4 +847,16 @@ function renderDoughnut() {
    
    Now points to renderChart instead of showResults
    ============================================================ */
-viewResultsBtn.addEventListener('click', renderChart, { once: true });
+   viewResultsBtn.addEventListener('click', renderChart, { once: true });
+
+/* ============================================================
+   PART 14 - RESET FUNCTION
+   
+   Clears local storage and reloads the page so everything
+   starts completely fresh — zero votes, zero views.
+   ============================================================ */
+   function resetApp() {
+      localStorage.removeItem('oddDuckProducts');
+      location.reload();    /* reloads the page after clearing */
+}
+   resetBtn.addEventListener('click', resetApp);
