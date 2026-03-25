@@ -26,7 +26,15 @@
         <p>Click the product you'd most like to see made!</p>
     </header>
 
-    <!-- MAIN: The primary content area -->
+    <!-- DARK/LIGHT MODE TOGGLE -->
+    <div id="theme-toggle-container">
+        <span id="theme-label">☀️ Light Mode</span>
+        <label class="toggle-switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+
     <main>
 
         <!-- This section is where our 3 product images will appear.
@@ -42,6 +50,9 @@
         <!-- This button is HIDDEN at first.
              It only appears after all voting rounds are complete. -->
         <button id="view-results" class="hidden">View Results</button>
+
+        <!-- RESET BUTTON — clears local storage and starts fresh -->
+        <button id="reset-btn" class="hidden">Reset Votes</button>
 
          <!-- CHART CONTAINER — hidden until voting complete -->
         <div id="chart-container" class="hidden">
