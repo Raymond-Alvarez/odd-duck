@@ -179,34 +179,12 @@ main {
 }
 
 [data-theme="dark"] #chart-container {
-    background-color: #1e3040;
+    background-color: #2c3e50;   /* lighter mid-tone — charts are visible against this */
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 [data-theme="dark"] footer {
     background-color: #060f14;
-}
-
-[data-theme="dark"] #reset-btn {
-    background-color: transparent;
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
-    padding: 10px 30px;
-    border-radius: 50px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: background-color 0.3s ease,
-                color 0.3s ease,
-                transform 0.2s ease;
-}
-
-[data-theme="dark"] #reset-btn:hover {
-    background-color: var(--primary-color);
-    color: var(--white);
-    transform: translateY(-2px);
 }
 
 /* ============================================================
@@ -294,6 +272,35 @@ main {
 }
 
 /* ============================================================
+   RESET BUTTON
+   Outlined pill style — same appearance in both light and
+   dark mode. Uses accent orange so it's visible on both
+   the light cream and dark navy page backgrounds.
+   On hover it fills solid orange, matching View Results.
+   ============================================================ */
+#reset-btn {
+    background-color: transparent;
+    color: var(--accent-color);          /* orange text — readable on any bg */
+    border: 2px solid var(--accent-color); /* orange border */
+    padding: 10px 30px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background-color 0.3s ease,
+                color 0.3s ease,
+                transform 0.2s ease;
+}
+
+#reset-btn:hover {
+    background-color: var(--accent-color); /* fills solid orange on hover */
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* ============================================================
    RESULTS DISPLAY
    The final results section
    ============================================================ */
@@ -373,30 +380,34 @@ footer {
 
 /* ============================================================
    CHART CONTAINER
+   Wide enough to give both charts real breathing room.
+   The doughnut in particular needs width for its side legend.
    ============================================================ */
 #chart-container {
     width: 100%;
-    max-width: 800px;
-    margin: 30px auto;
-    padding: 20px;
+    max-width: 1300px;          
+    
+    margin: 50px auto;
+    padding: 40px 100px;          /* generous internal padding */
     background-color: var(--white);
     border-radius: 12px;
     box-shadow: 0 4px 12px var(--shadow);
     display: flex;
     flex-direction: column;
-    gap: 40px;
+    gap: 20px;                   /* clear separation between bar chart and doughnut */
 }
 
-/* Bar chart — full width */
+/* Bar chart — full width of container */
 #myChart {
-    width: 100% !important;
-    height: 400px !important;    /* ← increased height so bars aren't squished */
-    max-width: 800px !important;
+    width: 95%!important;
+    height: 850px !important;    /* tall enough so bars and labels aren't cramped */
+    max-width: 1100px !important;
 }
 
-/* Doughnut — smaller and centered */
+/* Doughnut — wide enough for the side legend to breathe */
 #myDoughnut {
-    width: 400px !important;
-    height: 400px !important;
+    width: 800px !important;
+    height: 1000px !important;
     align-self: center;
+    
 }
